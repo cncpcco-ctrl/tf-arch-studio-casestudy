@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TF Architecture Studio — Business Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --espresso:   #241409;
+    --brown:      #7C4D2F;
+    --brown-light:#A8714A;
+    --parchment:  #FAF6F1;
+    --warm-rule:  #D6C9BC;
+    --white:      #FFFFFF;
+    --ink:        #1A0E06;
+    --muted:      #6B5344;
+    --rail-w:     240px;
+    --serif:      'Cormorant Garamond', Georgia, serif;
+    --sans:       'Inter', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --espresso:  #F0E8DF;
+      --parchment: #1A0E06;
+      --white:     #241409;
+      --ink:       #EDE4D8;
+      --muted:     #A8907C;
+      --warm-rule: #3D2416;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-weight: 300;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── LAYOUT ── */
+  .page-shell {
+    display: grid;
+    grid-template-columns: var(--rail-w) 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── RAIL ── */
+  .rail {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--warm-rule);
+    overflow-y: auto;
+    padding: 32px 24px 32px;
+    background: var(--white);
+  }
+
+  /* ── LOGO BLOCK ── */
+  .rail-logo {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--warm-rule);
+  }
+
+  /* The full logo SVG — tall layout to mirror the uploaded design */
+  .logo-svg-full {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .rail-meta {
+    font-size: 10.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .rail-meta strong { color: var(--ink); font-weight: 500; }
+
+  .rail-nav { flex: 1; }
+  .rail-nav ul { list-style: none; }
+  .rail-nav li + li { margin-top: 2px; }
+  .rail-nav a {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 0 5px 10px;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1.4;
+  }
+  .rail-nav a:hover, .rail-nav a.active {
+    color: var(--brown);
+    border-left-color: var(--brown);
+  }
+  .rail-footer {
+    font-size: 9.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--warm-rule);
+    padding-top: 14px;
+    margin-top: 20px;
+  }
+
+  /* ── MAIN ── */
+  .main { padding: 0 48px 80px; max-width: calc(680px + 96px); }
+
+  .doc-header {
+    padding: 52px 0 36px;
+    border-bottom: 1px solid var(--warm-rule);
+    margin-bottom: 48px;
+  }
+  .doc-eyebrow {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.14em;
+    color: var(--brown); text-transform: uppercase; margin-bottom: 14px;
+  }
+  .doc-title {
+    font-family: var(--serif);
+    font-size: clamp(32px, 5vw, 50px);
+    font-weight: 300; line-height: 1.1;
+    color: var(--espresso); max-width: 520px; margin-bottom: 10px;
+  }
+  .doc-subtitle {
+    font-family: var(--serif); font-size: 17px;
+    font-weight: 300; font-style: italic;
+    color: var(--muted); margin-bottom: 24px;
+  }
+  .doc-meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
+  .doc-meta-item { font-size: 11.5px; color: var(--muted); }
+  .doc-meta-item strong { color: var(--ink); font-weight: 500; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 56px; scroll-margin-top: 28px; }
+  .section-label {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.16em;
+    color: var(--brown); text-transform: uppercase; margin-bottom: 8px;
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(22px, 3vw, 28px);
+    font-weight: 300; color: var(--espresso);
+    line-height: 1.2; margin-bottom: 18px;
+  }
+  h3 {
+    font-family: var(--serif); font-size: 19px; font-weight: 600;
+    color: var(--espresso); margin-top: 32px; margin-bottom: 10px;
+  }
+  p {
+    font-size: 15px; line-height: 1.82;
+    max-width: 68ch; color: var(--ink); margin-bottom: 16px;
+  }
+  p:last-child { margin-bottom: 0; }
+
+  .rule { border: none; border-top: 1px solid var(--warm-rule); margin: 48px 0; }
+
+  /* ── FOUNDER GRID ── */
+  .founder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+    gap: 1px; background: var(--warm-rule);
+    border: 1px solid var(--warm-rule); margin: 24px 0;
+  }
+  .founder-card { background: var(--white); padding: 18px 20px; }
+  .founder-name {
+    font-family: var(--serif); font-size: 15.5px; font-weight: 600;
+    color: var(--espresso); margin-bottom: 2px;
+  }
+  .founder-role {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--brown); margin-bottom: 7px;
+  }
+  .founder-detail { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+  /* ── TEAM TABLE ── */
+  .team-table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 13.5px; }
+  .team-table th {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 8px 14px 8px 0;
+    border-bottom: 1px solid var(--warm-rule);
+  }
+  .team-table td {
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--warm-rule);
+    vertical-align: top; color: var(--ink); line-height: 1.5;
+  }
+  .team-table td:first-child {
+    font-family: var(--serif); font-size: 15px; font-weight: 600;
+    color: var(--espresso); white-space: nowrap; padding-right: 18px;
+  }
+  .team-table tr:last-child td { border-bottom: none; }
+
+  /* ── PIPELINE ── */
+  .pipeline-list {
+    display: flex; flex-direction: column; gap: 1px;
+    background: var(--warm-rule); border: 1px solid var(--warm-rule); margin: 22px 0;
+  }
+  .pipeline-item {
+    background: var(--white); padding: 16px 20px;
+    display: grid; grid-template-columns: 28px 1fr; gap: 14px; align-items: start;
+  }
+  .pipeline-index {
+    font-family: var(--serif); font-size: 26px; font-weight: 300;
+    color: var(--warm-rule); line-height: 1; text-align: right;
+  }
+  .pipeline-title {
+    font-family: var(--serif); font-size: 15px; font-weight: 600;
+    color: var(--espresso); margin-bottom: 3px;
+  }
+  .pipeline-detail { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* ── PULLQUOTE ── */
+  .pullquote {
+    border-left: 3px solid var(--brown);
+    padding: 4px 0 4px 22px; margin: 24px 0;
+  }
+  .pullquote p {
+    font-family: var(--serif); font-size: 17px; font-style: italic;
+    font-weight: 300; color: var(--espresso); line-height: 1.6; margin-bottom: 6px;
+  }
+  .pullquote .attribution {
+    font-size: 11px; letter-spacing: 0.08em; color: var(--muted);
+    font-style: normal; font-family: var(--sans);
+  }
+
+  /* ── BALANCE SHEET ── */
+  .bs-wrapper { border: 1px solid var(--warm-rule); margin: 24px 0; overflow-x: auto; }
+  .bs-header {
+    background: var(--espresso); color: var(--parchment);
+    padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  }
+  .bs-header-title { font-family: var(--serif); font-size: 15px; font-weight: 600; }
+  .bs-header-sub { font-size: 11px; opacity: 0.7; font-style: italic; }
+  table.bs { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .bs thead th {
+    background: var(--white); font-size: 9.5px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+    padding: 8px 14px; text-align: right; border-bottom: 1px solid var(--warm-rule);
+  }
+  .bs thead th:first-child { text-align: left; }
+  .bs td { padding: 9px 14px; border-bottom: 1px solid var(--warm-rule); color: var(--ink); background: var(--white); }
+  .bs td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  .bs .section-row td {
+    background: var(--parchment); font-size: 9.5px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--brown);
+    padding: 7px 14px; border-bottom: 1px solid var(--warm-rule);
+  }
+  .bs .total-row td {
+    font-weight: 500; border-top: 1px solid var(--espresso);
+    border-bottom: 2px solid var(--espresso);
+    color: var(--espresso); background: var(--parchment);
+  }
+  .bs .note-col { color: var(--brown); font-size: 11px; }
+  .bs-notes {
+    padding: 12px 14px; background: var(--parchment);
+    border-top: 1px solid var(--warm-rule);
+    font-size: 12px; color: var(--muted); line-height: 1.65;
+  }
+  .bs-notes p { font-size: 12px; max-width: none; color: var(--muted); line-height: 1.65; }
+  .bs-notes p + p { margin-top: 4px; }
+
+  /* ── CHALLENGE BOX ── */
+  .challenge-box {
+    border: 1px solid var(--espresso); padding: 28px 32px; margin: 28px 0;
+    position: relative; background: var(--white);
+  }
+  .challenge-box::before {
+    content: 'Management Challenge';
+    position: absolute; top: -10px; left: 22px;
+    background: var(--white); padding: 0 8px;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--brown);
+  }
+  .challenge-box p { font-size: 15px; }
+
+  /* ── EXEC QUESTION ── */
+  .exec-question {
+    background: var(--espresso); color: var(--parchment);
+    padding: 32px 36px; margin: 28px 0;
+  }
+  .exec-question p {
+    font-family: var(--serif); font-size: 19px; font-weight: 300;
+    font-style: italic; line-height: 1.65;
+    color: var(--parchment); max-width: 56ch;
+  }
+  .exec-label {
+    font-family: var(--sans); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--brown-light); margin-bottom: 12px;
+    display: block; font-style: normal;
+  }
+
+  /* ── CHALLENGES LIST ── */
+  .challenges-list {
+    list-style: none; border-left: 2px solid var(--warm-rule);
+    padding-left: 18px; margin: 18px 0;
+  }
+  .challenges-list li {
+    font-size: 14.5px; color: var(--ink);
+    padding: 5px 0; line-height: 1.6; position: relative;
+  }
+  .challenges-list li::before {
+    content: ''; position: absolute; left: -21px; top: 12px;
+    width: 5px; height: 5px; background: var(--brown); border-radius: 50%;
+  }
+
+  /* ── PRINT / RESPONSIVE ── */
+  @media print {
+    .rail { display: none; }
+    .page-shell { grid-template-columns: 1fr; }
+    .main { padding: 24px; }
+  }
+  @media (max-width: 800px) {
+    .page-shell { grid-template-columns: 1fr; }
+    .rail { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--warm-rule); padding: 20px; }
+    .rail-nav { display: none; }
+    .main { padding: 0 20px 56px; }
+    .doc-header { padding: 28px 0 24px; }
+    .founder-grid { grid-template-columns: 1fr 1fr; }
+    .logo-svg-full { max-width: 280px; }
+  }
+  @media (max-width: 480px) {
+    .founder-grid { grid-template-columns: 1fr; }
+    .doc-meta-row { flex-direction: column; gap: 6px; }
+    .main { padding: 0 16px 44px; }
+    .bs-header { flex-direction: column; gap: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<div class="page-shell">
+
+  <!-- ── RAIL ── -->
+  <aside class="rail" aria-label="Navigation">
+
+    <div class="rail-logo">
+      <!--
+        SVG recreation of the uploaded TF Architecture Studio logo.
+        Left: T glyph in warm brown (#7C4D2F) with downward-pointing ribbon feet.
+        Right: F glyph in near-black (#2B1A10) with two horizontal bars and a diagonal cut.
+        Thin cross-hair registration lines in brown span the full mark.
+        Wordmark: ARCHITECTURE in near-black, STUDIO in brown, spaced tracking.
+        Tagline: PEOPLE · PLACES · POSSIBILITIES in light brown, small caps tracking.
+      -->
+      <svg class="logo-svg-full" viewBox="0 0 320 180" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="TF Architecture Studio — People · Places · Possibilities">
+
+        <!-- ── Registration / crosshair lines ── -->
+        <!-- Horizontal rule across whole mark -->
+        <line x1="10"  y1="44" x2="155" y2="44" stroke="#7C4D2F" stroke-width="0.7" opacity="0.55"/>
+        <!-- Vertical rule through centre of TF mark -->
+        <line x1="82"  y1="8"  x2="82"  y2="130" stroke="#241409" stroke-width="0.7" opacity="0.45"/>
+
+        <!-- ── T GLYPH (brown, left side) ── -->
+        <!-- Crossbar of T -->
+        <polygon points="10,34 82,34 82,56 10,56" fill="#7C4D2F"/>
+        <!-- Stem of T (left half, brown) -->
+        <polygon points="36,56 60,56 60,110 36,110" fill="#7C4D2F"/>
+        <!-- Left ribbon foot (tapers to point) -->
+        <polygon points="36,110 47,130 36,130" fill="#7C4D2F"/>
+        <!-- Right ribbon foot -->
+        <polygon points="60,110 49,130 60,130" fill="#7C4D2F"/>
+
+        <!-- ── F GLYPH (near-black, right side) ── -->
+        <!-- Top bar of F (diagonal cut on left edge, flat right) -->
+        <polygon points="82,34 155,34 155,52 82,52 70,43" fill="#241409"/>
+        <!-- Mid bar of F -->
+        <polygon points="82,63 140,63 140,79 82,79 72,71" fill="#241409"/>
+        <!-- Stem of F (right half of shared vertical) -->
+        <polygon points="82,52 100,52 100,110 82,110" fill="#241409"/>
+
+        <!-- ── WORDMARK ── -->
+        <!-- ARCHITECTURE — near-black, wide tracking -->
+        <text x="168" y="80"
+              font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+              font-size="22" font-weight="400" letter-spacing="3"
+              fill="#241409">ARCHITECTURE</text>
+
+        <!-- STUDIO — brown, wider tracking -->
+        <text x="172" y="104"
+              font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+              font-size="18" font-weight="300" letter-spacing="8"
+              fill="#7C4D2F">STUDIO</text>
+
+        <!-- Rule under wordmark -->
+        <line x1="168" y1="112" x2="315" y2="112" stroke="#7C4D2F" stroke-width="0.8"/>
+
+        <!-- Tagline -->
+        <text x="168" y="128"
+              font-family="'Inter', 'Helvetica Neue', Arial, sans-serif"
+              font-size="8.5" font-weight="300" letter-spacing="3.5"
+              fill="#A8714A">PEOPLE  ·  PLACES  ·  POSSIBILITIES</text>
+
+      </svg>
+    </div>
+
+    <div class="rail-meta">
+      <strong>ABUSMAA1</strong><br>
+      1T AY 2026–2027<br>
+      Finals Period · Bonus Quiz<br><br>
+      <strong>Instructor</strong><br>
+      Ar. Jo Corcino, UAP
+    </div>
+
+    <nav class="rail-nav" aria-label="Sections">
+      <ul>
+        <li><a href="#background">Background</a></li>
+        <li><a href="#founders">The Founders</a></li>
+        <li><a href="#team">Current Team</a></li>
+        <li><a href="#pipeline">Pipeline Projects</a></li>
+        <li><a href="#financials">Balance Sheet</a></li>
+        <li><a href="#cracks">Cracks in the Foundation</a></li>
+        <li><a href="#challenge">Management Challenge</a></li>
+        <li><a href="#executive">Executive Challenge</a></li>
+      </ul>
+    </nav>
+
+    <div class="rail-footer">
+      BS Architecture · NU Fairview<br>
+      Business Management &amp;<br>Application for Architecture 1
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <header class="doc-header">
+      <div class="doc-eyebrow">Business Case Study</div>
+      <h1 class="doc-title">Scaling an Emerging Architecture Firm</h1>
+      <p class="doc-subtitle">Strategic Problem-Solving Exercise for Management Team</p>
+      <div class="doc-meta-row">
+        <div class="doc-meta-item"><strong>Subject</strong> ABUSMAA1 · Business Management &amp; Application</div>
+        <div class="doc-meta-item"><strong>Term</strong> 1T AY 2026–2027 · Finals Period</div>
+        <div class="doc-meta-item"><strong>Firm</strong> TF Architecture Studio, Mandaluyong City</div>
+      </div>
+    </header>
+
+    <!-- BACKGROUND -->
+    <section class="section" id="background">
+      <div class="section-label">Background</div>
+      <h2>How TF Architecture Studio came to be</h2>
+      <p>TF Architecture Studio was incorporated in April 2025 by three longtime friends who had stayed in each other's lives long after high school — through architecture school, licensure exams, years apart working different markets, and the slow accumulation of a shared conviction: that the Philippine design industry had room for a firm that could do polished work and run like a real business.</p>
+      <p>They pooled their personal savings, registered the firm, and opened a modest office in Mandaluyong City — deliberately close to the Ortigas corridor and its concentration of developers, retail operators, and institutional clients. There was no external investor at the start. The capitalization was bootstrapped, the overhead kept deliberately lean, and the ambition quietly outsized.</p>
+      <p>A fourth partner joined shortly after. <strong>James Whitfield</strong>, an Australian architect based in Sydney, had been working informally with Rafael on project referrals for over a year before formalizing his participation as a shareholder and foreign investor. James cannot independently practice architecture in the Philippines, but he brought something the founding three could not replicate: a steady pipeline of outsourced documentation and production work from Australian firms looking for skilled, cost-competitive Philippine studios.</p>
+      <p>A full year into operations, the picture looked promising on paper. The studio had secured three local architectural commissions — two residential projects and a commercial retail fit-out, each valued at approximately ₱1.5 million — and two Australian outsourcing contracts worth AUD 500,000 and AUD 350,000 respectively, both coordinated through James. For a firm celebrating its first anniversary, the project load was encouraging.</p>
+      <p style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:400;font-style:italic;color:var(--espresso);line-height:1.5;">The problem was that the firm itself was not.</p>
+    </section>
+
+    <!-- FOUNDERS -->
+    <section class="section" id="founders">
+      <div class="section-label">The Partners</div>
+      <h2>Who built the firm</h2>
+      <div class="founder-grid">
+        <div class="founder-card">
+          <div class="founder-name">Architect Cristina Tan</div>
+          <div class="founder-role">Design Lead</div>
+          <div class="founder-detail">Returned to Manila in 2023 after seven years in Dubai — hospitality interiors and commercial retail fit-outs. Portfolio, overseas network, and a reputation for design that holds up on site.</div>
+        </div>
+        <div class="founder-card">
+          <div class="founder-name">Architect Marco Ferrer</div>
+          <div class="founder-role">Technical Lead</div>
+          <div class="founder-detail">Nine years of local practice: government facilities, residential subdivisions, institutional commissions. Thinks in specifications, permit timelines, and construction sequences.</div>
+        </div>
+        <div class="founder-card">
+          <div class="founder-name">Rafael Ocampo</div>
+          <div class="founder-role">Business Development</div>
+          <div class="founder-detail">Finance and marketing professional. Watched architect friends navigate a profession that rewarded talent but punished business naivety. Finds clients, structures deals, pushes for growth.</div>
+        </div>
+        <div class="founder-card">
+          <div class="founder-name">James Whitfield</div>
+          <div class="founder-role">Investor · Outsourcing</div>
+          <div class="founder-detail">Australian architect based in Sydney. Foreign investor and fourth shareholder. Cannot practice independently in the Philippines. Source of the firm's Australian outsourcing pipeline.</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- TEAM -->
+    <section class="section" id="team">
+      <div class="section-label">Organization</div>
+      <h2>Current team</h2>
+      <p>To handle the growing workload, TF Architecture Studio brought on three employees — each of whom was, by the time of the retreat, working paid overtime.</p>
+      <table class="team-table">
+        <thead>
+          <tr><th>Name</th><th>Role</th><th>Profile &amp; Note</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Miguel Santos</td>
+            <td style="font-size:12.5px;color:var(--muted);">Junior Draftsperson</td>
+            <td style="font-size:13px;">Architecture graduate, ~3 years drafting experience. Reviewing for January 2027 Licensure Exam. Most stretched resource — pulled across every active project.</td>
+          </tr>
+          <tr>
+            <td>Ar. Elena delos Reyes</td>
+            <td style="font-size:12.5px;color:var(--muted);">Licensed Architect</td>
+            <td style="font-size:13px;">Registered architect, 5 years experience (all residential). Manages production and site coordination. Married with children; employee most at risk of leaving.</td>
+          </tr>
+          <tr>
+            <td>Trixie Valdez</td>
+            <td style="font-size:12.5px;color:var(--muted);">Administrative Clerk</td>
+            <td style="font-size:13px;">HRM graduate. Bookkeeping, procurement, scheduling, secretarial, errands. Role scope has expanded well beyond any reasonable job description.</td>
+          </tr>
+          <tr>
+            <td>Gemma Ocampo</td>
+            <td style="font-size:12.5px;color:var(--muted);">Extended Team — Undefined</td>
+            <td style="font-size:13px;">Rafael's wife. BS Architecture graduate, not yet licensed. 8 years construction experience; 4 years as James Whitfield's remote CAD/BIM drafter. No contract, no defined role, no agreed compensation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <hr class="rule">
+
+    <!-- PIPELINE -->
+    <section class="section" id="pipeline">
+      <div class="section-label">Growth Opportunity</div>
+      <h2>New projects in the pipeline</h2>
+      <p>Three new project inquiries had converted into serious leads within the same month. The founders were being asked to commit.</p>
+      <div class="pipeline-list">
+        <div class="pipeline-item">
+          <div class="pipeline-index">1</div>
+          <div>
+            <div class="pipeline-title">Retail Fit-Out — Alabang Town Center</div>
+            <div class="pipeline-detail">180 sq.m flagship store for a local fashion brand. Cristina's commercial network referral. Design development expected within 30 days of contract signing.</div>
+          </div>
+        </div>
+        <div class="pipeline-item">
+          <div class="pipeline-index">2</div>
+          <div>
+            <div class="pipeline-title">Café &amp; Co-working Space — BGC</div>
+            <div class="pipeline-detail">220 sq.m café and co-working hybrid. Cristina's commercial network referral. Same 30-day mobilization expectation.</div>
+          </div>
+        </div>
+        <div class="pipeline-item">
+          <div class="pipeline-index">3</div>
+          <div>
+            <div class="pipeline-title">School Renovation — Pasig City</div>
+            <div class="pipeline-detail">Phased institutional commission: 6 classrooms, science laboratory, library wing. Marco's former government contact. Projected construction value: ₱8.5 million.</div>
+          </div>
+        </div>
+      </div>
+      <p>The current team — already stretched across three active local projects and two Australian outsourcing contracts — had no realistic capacity to absorb three new commissions without either hiring additional staff, outsourcing production, or watching delivery timelines deteriorate further.</p>
+      <div class="pullquote">
+        <p>"We didn't start this firm to be careful. We started it to build something."</p>
+        <span class="attribution">— Rafael Ocampo, pre-retreat group chat</span>
+      </div>
+      <p>Cristina and Marco were not opposed to growth. They were opposed to growth without a plan.</p>
+    </section>
+
+    <hr class="rule">
+
+    <!-- BALANCE SHEET -->
+    <section class="section" id="financials">
+      <div class="section-label">Financial Position</div>
+      <h2>Balance sheet</h2>
+      <p>Before the retreat, Rafael asked Trixie to pull together the firm's financial position. The result gave the team its clearest picture yet of where TF Architecture Studio actually stood.</p>
+      <div class="bs-wrapper">
+        <div class="bs-header">
+          <span class="bs-header-title">TF Architecture Studio</span>
+          <span class="bs-header-sub">Balance Sheet — as of March 31, 2026 &nbsp;·&nbsp; Prepared internally; unaudited</span>
+        </div>
+        <table class="bs">
+          <thead>
+            <tr><th>Account</th><th>₱ (Philippine Pesos)</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr class="section-row"><td colspan="3">Assets</td></tr>
+            <tr><td>Cash and cash equivalents</td><td>180,000</td><td></td></tr>
+            <tr><td>Accounts receivable — local projects</td><td>1,440,000</td><td class="note-col">(a)</td></tr>
+            <tr><td>Accounts receivable — Australian contracts</td><td>2,270,500</td><td class="note-col">(b)</td></tr>
+            <tr><td>Office equipment and furniture (net)</td><td>65,000</td><td></td></tr>
+            <tr><td>Software licenses (net)</td><td>30,000</td><td></td></tr>
+            <tr class="total-row"><td>Total Assets</td><td>3,985,500</td><td></td></tr>
+            <tr class="section-row"><td colspan="3">Liabilities</td></tr>
+            <tr><td>Accounts payable — consultants and suppliers</td><td>210,000</td><td></td></tr>
+            <tr><td>Accrued overtime payable</td><td>85,000</td><td class="note-col">(c)</td></tr>
+            <tr><td>SSS / PhilHealth / Pag-IBIG payable</td><td>18,500</td><td></td></tr>
+            <tr class="total-row"><td>Total Liabilities</td><td>313,500</td><td></td></tr>
+            <tr class="section-row"><td colspan="3">Owners' Equity</td></tr>
+            <tr><td>Partners' contributed capital</td><td>500,000</td><td></td></tr>
+            <tr><td>Retained earnings (reinvested profits)</td><td>3,172,000</td><td></td></tr>
+            <tr class="total-row"><td>Total Owners' Equity</td><td>3,672,000</td><td></td></tr>
+            <tr class="total-row"><td><strong>Total Liabilities and Equity</strong></td><td><strong>3,985,500</strong></td><td></td></tr>
+          </tbody>
+        </table>
+        <div class="bs-notes">
+          <p><strong>(a)</strong> Only 30% of local receivables collected to date. Remaining 70% (₱1,008,000) outstanding across three active projects with no formal collection schedule.</p>
+          <p><strong>(b)</strong> Australian contract receivables converted at ₱36.50/AUD. Neither contract formally invoiced; revenue recognition pending billing milestone confirmation from James Whitfield.</p>
+          <p><strong>(c)</strong> Accrued overtime relates to Elena delos Reyes and Miguel Santos. No cap on overtime hours established.</p>
+        </div>
+      </div>
+      <p>Total assets were nearly ₱4 million and owners' equity was strong on paper. But liquid cash stood at ₱180,000 — against ₱313,500 in current payables. The firm's two largest assets were receivables: one uncollected, the other not yet invoiced.</p>
+      <div class="pullquote">
+        <p>"We look good on paper. We are not good on paper."</p>
+        <span class="attribution">— Marco Ferrer, night before the retreat</span>
+      </div>
+      <div class="pullquote">
+        <p>"That's exactly why we need the loan."</p>
+        <span class="attribution">— Rafael Ocampo, in reply</span>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- CRACKS -->
+    <section class="section" id="cracks">
+      <div class="section-label">Structural Problems</div>
+      <h2>Cracks in the foundation</h2>
+      <p>By April 2026 — exactly one year after the firm's founding — the founders had begun to notice that TF Architecture Studio's early momentum was masking structural problems that would not resolve themselves.</p>
+      <ul class="challenges-list">
+        <li>Two active projects had slipped five days behind schedule with no recovery plan in place.</li>
+        <li>Cash reserves were tighter than revenue figures suggested — profits continuously reinvested, no formal billing or collection schedule established.</li>
+        <li>The three founders disagreed, sometimes sharply, on how fast the firm should scale.</li>
+        <li>Marketing remained almost entirely referral-driven, with no deliberate strategy for building a public presence.</li>
+        <li>Job roles had begun to blur, creating confusion about accountability and gaps in follow-through.</li>
+        <li>Elena delos Reyes had developed a pattern of arriving late to internal meetings — delayed each morning by school drop-off three streets from the office. The tardiness itself was minor; the signal it sent about scheduling culture was not.</li>
+        <li>Governance questions had begun to surface: ownership structure, founder authorities, James Whitfield's legal standing as a foreign architect-investor, and Gemma's undefined participation in production work.</li>
+      </ul>
+      <p>The founders had scheduled a strategic planning retreat. The agenda was expansion. The real agenda, whether they had named it yet or not, was survival — the kind of structured, deliberate reckoning that separates firms that scale cleanly from those that collapse under the weight of their own early success.</p>
+    </section>
+
+    <hr class="rule">
+
+    <!-- MANAGEMENT CHALLENGE -->
+    <section class="section" id="challenge">
+      <div class="challenge-box">
+        <p>You have been engaged as an external management consulting team retained to support TF Architecture Studio ahead of its planned expansion.</p>
+        <p style="margin-top:12px;">Your task is to evaluate the firm's current condition — its financial position, organizational structure, legal standing, operational performance, and strategic direction — and to develop a set of prioritized recommendations that the founders can act on before committing to growth.</p>
+        <p style="margin-top:12px;">The founders are sharp, motivated, and not without ego. They will push back on recommendations they find impractical. Your advice needs to be grounded, specific, and defensible.</p>
+      </div>
+    </section>
+
+    <!-- EXECUTIVE CHALLENGE -->
+    <section class="section" id="executive">
+      <div class="section-label">Final Executive Challenge</div>
+      <h2>Present to the Board</h2>
+      <p>Imagine you are presenting to the Board of Directors of TF Architecture Studio. You have to convince the founders — Cristina Tan, Marco Ferrer, Rafael Ocampo, and James Whitfield — that your proposed strategy is the best path toward sustainable growth, given a full pipeline, a cash-tight balance sheet, and a team already operating at capacity.</p>
+      <div class="exec-question">
+        <span class="exec-label">Overarching Question</span>
+        <p>How can TF Architecture Studio scale from a successful start-up into a financially sustainable, professionally governed, legally compliant, and competitive architecture practice — without compromising design quality, client trust, or long-term profitability?</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.rail-nav a');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.rail-nav a[href="#${entry.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
